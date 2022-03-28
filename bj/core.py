@@ -5,9 +5,9 @@ from . import config
 
 def lobbyWaiting(second):
     conn = util.getNewConnection()
-    util.updateProperty(conn, 'allowJoinGame', 'True')
+    util.updateProperty(conn, config.DB_FIELD_ALLOW_JOIN_GAME, str(True))
     time.sleep(second)
-    util.updateProperty(conn, 'allowJoinGame', 'False')
+    util.updateProperty(conn, config.DB_FIELD_ALLOW_JOIN_GAME, str(False))
 
 async def newGame(ctx):
     if util.isGameExists(ctx.conn):
@@ -25,7 +25,7 @@ async def newGame(ctx):
     # return curr.fetchall()
 
 async def joinGame(ctx):
-    if not (util.getProperty(ctx.conn, config.DB_FIELD_ALLOW_JOIN_GAME).lower() == 'true'):
+    if not (util.getProperty(ctx.conn, config.DB_FIELD_ALLOW_JOIN_GAME).lower() == str(True).lower()):
         msg = f"can't join game at the moment"
         await ctx.channel.send(msg)
     else:

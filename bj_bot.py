@@ -41,5 +41,7 @@ async def bj(ctx, *args):
         await command.test(ctx)
     else:
         await command.hint(ctx)
+    
+    ctx.conn.close()
 
 bot.run(config.DISCORD_TOKEN)
