@@ -27,9 +27,10 @@ async def rank(ctx):
     await ctx.channel.send(output)
 
 async def new(ctx):
-    core.newGame(ctx)
-    return
+    await core.newGame(ctx)
 
 async def join(ctx):
-    core.joinGame(ctx)
-    return
+    await core.joinGame(ctx)
+
+async def test(ctx):
+    pass

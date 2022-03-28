@@ -1,15 +1,33 @@
+import threading
+import time
 from . import util
 from . import config
 
-def newGame(ctx):
+def lobbyWaiting(second):
+    conn = util.getNewConnection()
+    util.updateProperty(conn, 'allowJoinGame', 'True')
+    time.sleep(second)
+    util.updateProperty(conn, 'allowJoinGame', 'False')
+
+async def newGame(ctx):
     if util.isGameExists(ctx.conn):
         msg = 'There is active game running, please wait for next round'
-        ctx.channel.send(msg)
+        await ctx.channel.send(msg)
     else:
-        pass
-    sql = (f'select * from {config.DB_TABLE_NAME_PLAYER}')
-    curr = util._executeDDL(ctx.conn, sql)
-    return curr.fetchall()
+        msg = f'⭐⭐⭐New game created, {config.BJ_LOBBY_WAIT_TIME_SECOND}s to join⭐⭐⭐'
+        await ctx.channel.send(msg)
 
-def joinGame(ctx):
-    pass
+        t = threading.Thread(target=lobbyWaiting, args=(int(config.BJ_LOBBY_WAIT_TIME_SECOND),))
+        t.start()
+
+    # sql = (f'select * from {config.DB_TABLE_NAME_PLAYER}')
+    # curr = util._executeDDL(ctx.conn, sql)
+    # return curr.fetchall()
+
+async def joinGame(ctx):
+    if not (util.getProperty(ctx.conn, config.DB_FIELD_ALLOW_JOIN_GAME).lower() == 'true'):
+        msg = f"can't join game at the moment"
+        await ctx.channel.send(msg)
+    else:
+        msg = f"{ctx.userName} joined"
+        await ctx.channel.send(msg)
