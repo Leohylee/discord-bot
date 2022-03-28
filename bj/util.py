@@ -12,6 +12,7 @@ def initializeEnvironment():
         conn = sqlite3.connect(config.DB_FILE_PATH)
 
         createPlayersDataSet(conn)
+        createLobbyDataSet(conn)
         createPropertiesDataSet(conn)
 
 def getNewConnection():
@@ -51,6 +52,9 @@ def isGameExists(conn):
 def _isPlayersDataSetExists(conn):
     return _isTableExists(conn, config.DB_TABLE_NAME_PLAYER)
 
+def _isLobbyDataSetExists(conn):
+    return _isTableExists(conn, config.DB_CREATE_LOBBY_SQL)
+
 def _isPropertiesDataSetExists(conn):
     return _isTableExists(conn, config.DB_TABLE_NAME_PROPERTIES)
 
@@ -80,6 +84,12 @@ def createPlayersDataSet(conn):
     logger.info('create player table')
     _executeDDL(conn, config.DB_CREATE_PLAYER_SQL)
 
+def createLobbyDataSet(conn):
+    if _isLobbyDataSetExists(conn):
+        return
+    logger.info('create lobby table')
+    _executeDDL(conn, config.DB_CREATE_LOBBY_SQL)
+
 def createPropertiesDataSet(conn):
     if _isPropertiesDataSetExists(conn):
         return
@@ -105,3 +115,19 @@ def updateProperty(conn, key, value):
     sql = (f'update {config.DB_TABLE_NAME_PROPERTIES} set value = "{value}" where key = "{key}"')
     logger.info(f'updateProperty {key} {value}')
     _executeDML(conn, sql)
+
+def emptyLobby(conn):
+    sql = (f'delete from {config.DB_TABLE_NAME_LOBBY}')
+    _executeDML(conn, sql)
+
+def joinLobby(conn, userId):
+    sql = (f'insert into {config.DB_TABLE_NAME_LOBBY} values ("{userId}")')
+    _executeDML(conn, sql)
+
+def listLobby(conn):
+    sql = (f'select {config.DB_TABLE_NAME_LOBBY}.userId, userName from {config.DB_TABLE_NAME_LOBBY}, {config.DB_TABLE_NAME_PLAYER} where {config.DB_TABLE_NAME_LOBBY}.userId = {config.DB_TABLE_NAME_PLAYER}.userId')
+    curr = _executeDDL(conn, sql)
+    return curr.fetchall()
+
+def formatBalance(amount):
+    return '${:0,.0f}'.format(amount).replace('$-','-$')

@@ -1,10 +1,9 @@
-from . import util
-from . import core
+from . import util, core, config
 
 async def help(ctx):
     msg = f"""
 {'$bj [h|help]': <20} show help
-{'$bj [n|new]': <20} create new game
+{'$bj [n|new]': <20}  new game
 {'$bj [j|join]': <20} join game
 {'$bj [r|rank]': <20} show leaderboard
     """
@@ -12,18 +11,16 @@ async def help(ctx):
 
 async def hint(ctx):
     if not util.isGameExists(ctx.conn):
-        msg = (f'No game at the moment, use "$bj new" to create new game')
+        await ctx.channel.send(config.BJ_MSG['HINT_NEW_GAME'])
     else:
-        # TODO: check if user in game to prompt hints
-        msg = (f'use "$bj join" to join')
-    await ctx.channel.send(msg)
+        await ctx.channel.send(config.BJ_MSG['HINT_JOIN_GAME'])
 
 async def rank(ctx):
     data = util.getRankData(ctx.conn)
-    output = '🏆🏆🏆 leaderboard (credit) 🏆🏆🏆\n'
-    for row in data:
-        balance = '${:0,.0f}'.format(float(row[2])).replace('$-','-$')
-        output += (f'{row[1]}:\t{balance}\n')
+    output = config.BJ_MSG['LEADERBOARD_HEADLINE']
+    for userId, userName, credit in data:
+        balance = util.formatBalance(float(credit))
+        output += (f'{userName}:\t{balance}\n')
     await ctx.channel.send(output)
 
 async def new(ctx):
