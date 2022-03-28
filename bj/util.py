@@ -23,7 +23,7 @@ def initialize(userId, userName):
 
 def _isTableExists(conn, tableName):
     curr = conn.cursor()
-    curr.execute(f'select count(name) from sqlite_master where type="table" AND name="{tableName}"')
+    curr.execute(f'select count(name) from sqlite_master where type="table" and name="{tableName}"')
     try:
         return True if curr.fetchone()[0]==1 else False
     finally:

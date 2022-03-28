@@ -1,3 +1,9 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DISCORD_TOKEN = os.getenv("BJ_BOT_TOKEN")
 DB_FILE_NAME = 'discord-bot.sqlite'
 DB_TABLE_NAME_GAME = 'bj_game'
 DB_TABLE_NAME_PLAYER = 'bj_players'
