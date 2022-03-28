@@ -24,6 +24,7 @@ CAT_API_TOKEN = os.getenv("CAT_API_TOKEN")
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+
 def choose_reply_message(message):
     def translate_time_to_chinese_greet(h):
         return "早安" if 5 <= h <= 11 else "午安" if 12 <= h <= 17 else "晚安"
@@ -49,7 +50,7 @@ def choose_reply_message(message):
             case "greetings":
                 reply = random.choice(bot_replies.greetings) + "!"
             case "do_you_know":
-                reply = random.choice(bot_replies.do_you_know).replace("_", translate_time_to_chinese_greet(datetime.datetime.now().hour)) + "\n"+ random.choice(bot_replies.flowers)
+                reply = random.choice(bot_replies.do_you_know).replace("_", translate_time_to_chinese_greet(datetime.datetime.now().hour)) + "\n" + random.choice(bot_replies.flowers)
             case "cat":
                 reply = call_cat_api()
         return reply, chosen
@@ -63,6 +64,7 @@ def choose_reply_message(message):
         return "ヽ( ._. )ノ", ". emoji"
     else:
         return "", "unknown"
+
 
 @bot.event
 async def on_message(message):
@@ -79,20 +81,20 @@ async def on_message(message):
     else:
         await bot.process_commands(message)
 
+
 @bot.command()
 async def remindme(ctx, time):
     def convert_time(time):
-        pos = ['s', 'm', 'h', 'd']
-        time_dict = {"s": 1, "m": 60, "h": 3600, "d": 3600*24}
+        time_dict = {"s": 1, "m": 60, "h": 3600, "d": 3600 * 24}
         time_concat = ""
-        seconds = 0
+        wait_time = 0
         for num in time:
-            if num in pos and time_concat.isnumeric():
-                seconds = seconds + time_dict[num] * int(time_concat)
+            if num in time_dict and time_concat.isnumeric():
+                wait_time = wait_time + time_dict[num] * int(time_concat)
                 time_concat = ""
             else:
                 time_concat = time_concat + num
-        return seconds
+        return wait_time
 
     if ctx.message.reference:
         creater = "<@%s>" % str(ctx.author.id)
@@ -105,6 +107,7 @@ async def remindme(ctx, time):
         await ctx.channel.send("%s Reminder: ''%s'' -- by %s at %s" % (creater, message.content, author, str(message_date)))
     else:
         await ctx.channel.send("Please make reference to a message for reminder.")
+
 
 @bot.event
 async def on_member_update(before, after):
