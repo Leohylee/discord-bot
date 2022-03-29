@@ -11,6 +11,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from modules.replies import Replies
+from modules.user_messages import User_Messages
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger("Reply Bot")
@@ -23,6 +24,7 @@ CAT_API_TOKEN = os.getenv("CAT_API_TOKEN")
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
+
 
 def choose_reply_message(message):
     def translate_time_to_chinese_greet(h):
@@ -38,31 +40,30 @@ def choose_reply_message(message):
             if data and data[0] and data[0].get("url"):
                 return data[0].get("url")
 
-    reply_type = ["greetings", "do_you_know", "cat"]
-    weights = [60, 20, 20]
     bot_replies = Replies()
-    reply = "hi auntie!"
+    user_messages = User_Messages()
+    reply = "hi!"
 
     if message.content.lower() in bot_replies.greetings:
-        chosen = random.choices(reply_type, weights)[0]
+        chosen = random.choices(Replies.greeting_reply_type, Replies.greeting_weights)[0]
         match chosen:
             case "greetings":
                 reply = random.choice(bot_replies.greetings) + "!"
             case "do_you_know":
-                reply = random.choice(bot_replies.do_you_know).replace("_", translate_time_to_chinese_greet(datetime.datetime.now().hour)) + "\n"+ random.choice(bot_replies.flowers)
+                reply = random.choice(bot_replies.do_you_know).replace("_", translate_time_to_chinese_greet(
+                    datetime.datetime.now().hour)) + "\n" + random.choice(bot_replies.flowers)
             case "cat":
                 reply = call_cat_api()
         return reply, chosen
-    elif message.content.lower() in ["cs?", "play?", "csgo?"]:
+    elif message.content.lower() in user_messages.csgo:
         return random.choice(bot_replies.csgo), "csgo"
-    elif message.content.lower() in ["on9","diu","dllm","pk","jm9","on99","diu nei","仆街","屌","屌你","fuck","fuck you","fuck u","fk","damn"]:
+    elif message.content.lower() in user_messages.swear:
         return random.choice(bot_replies.anti_swear), "anti_swear"
-    elif message.content.lower() == "笑左":
-        return "笑埋右", "laugh_right"
-    elif message.content.lower() == ".":
-        return "ヽ( ._. )ノ", ". emoji"
+    elif message.content.lower() in user_messages.dot:
+        return random.choices(bot_replies.dot), ". emoji"
     else:
         return "", "unknown"
+
 
 @bot.event
 async def on_message(message):
@@ -79,11 +80,12 @@ async def on_message(message):
     else:
         await bot.process_commands(message)
 
+
 @bot.command()
 async def remindme(ctx, time):
     def convert_time(time):
         pos = ['s', 'm', 'h', 'd']
-        time_dict = {"s": 1, "m": 60, "h": 3600, "d": 3600*24}
+        time_dict = {"s": 1, "m": 60, "h": 3600, "d": 3600 * 24}
         time_concat = ""
         seconds = 0
         for num in time:
@@ -100,15 +102,20 @@ async def remindme(ctx, time):
         message_date = message.created_at.replace(tzinfo=datetime.timezone.utc, microsecond=0).astimezone(tz=None)
         author = "<@%s>" % str(message.author.id)
         seconds = convert_time(time)
-        await ctx.channel.send("I will remind you this message on %s" % (datetime.datetime.now() + datetime.timedelta(0, int(seconds))).replace(microsecond=0))
+        await ctx.channel.send("I will remind you this message on %s" % (
+                    datetime.datetime.now() + datetime.timedelta(0, int(seconds))).replace(microsecond=0))
         await asyncio.sleep(seconds)
-        await ctx.channel.send("%s Reminder: ''%s'' -- by %s at %s" % (creater, message.content, author, str(message_date)))
+        await ctx.channel.send(
+            "%s Reminder: ''%s'' -- by %s at %s" % (creater, message.content, author, str(message_date)))
     else:
         await ctx.channel.send("Please make reference to a message for reminder.")
+
 
 @bot.event
 async def on_member_update(before, after):
     if before.status != after.status:
-        logger.info("%s: %s (%s) - %s -> %s", str(datetime.datetime.now()), str(after.name), str(after.guild.name), str(before.status), str(after.status))
+        logger.info("%s: %s (%s) - %s -> %s", str(datetime.datetime.now()), str(after.name), str(after.guild.name),
+                    str(before.status), str(after.status))
+
 
 bot.run(DISCORD_TOKEN)
