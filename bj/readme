@@ -1,0 +1,5 @@
+develop using nodemon
+nodemon --exec "py bj_bot.py" ./bj_bot.py
+
+supported on the fly config update
+$bj update_config BJ_LOBBY_WAIT_TIME_SECOND <second>

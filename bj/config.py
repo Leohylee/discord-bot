@@ -26,26 +26,18 @@ DB_CREATE_PLAYER_SQL = (f'''create table if not exists {DB_TABLE_NAME_PLAYER} (
 DB_CREATE_LOBBY_SQL = (f'''create table if not exists {DB_TABLE_NAME_LOBBY} (
 	userId VARCHAR(255) PRIMARY KEY
 ); ''')
-DB_CREATE_PROPERTIES_SQL = (f'''create table if not exists {DB_TABLE_NAME_PROPERTIES} (
-	key VARCHAR(255) PRIMARY KEY,
-    value VARCHAR(255) NOT NULL
-); ''')
-DB_INSERT_PROPERTIES_SQL = (f'''insert into {DB_TABLE_NAME_PROPERTIES} values
-('{DB_FIELD_ALLOW_JOIN_GAME}', 'False')
-; ''')
-CARD='123456789AKQJ123456789AKQJ123456789AKQJ123456789AKQJ123456789AKQJ123456789AKQJ123456789AKQJ123456789AKQJ'
 
+BJ_DECK='123456789AKQJ123456789AKQJ123456789AKQJ123456789AKQJ123456789AKQJ123456789AKQJ123456789AKQJ123456789AKQJ'
 BJ_LOBBY_WAIT_TIME_SECOND=30
 
 BJ_MSG_EN = {
     'GAME_EXISTS_WAIT_FOR_NEXT_ROUND': 'There is active game running, please wait for next round',
-    'NEW_GAME_CREATED': f'⭐⭐⭐ New game created, {BJ_LOBBY_WAIT_TIME_SECOND}s to join ⭐⭐⭐',
+    'NEW_GAME_CREATED': '⭐⭐⭐ New game created, %s second to join ⭐⭐⭐',
     'JOIN_GAME_NOT_AVAILALBE': "can't join game at the moment",
-    'PLAYER_JOINED': '%s joined',
     'HINT_NEW_GAME': 'No game at the moment, use "$bj new" to create new game',
     'HINT_JOIN_GAME': 'use "$bj join" to join',
     'LEADERBOARD_HEADLINE': '🏆🏆🏆 leaderboard (credit) 🏆🏆🏆\n',
-    'LOBBY_CLOSED': 'lobby closed',
+    'LOBBY_CLOSED': '🔒 lobby closed',
     'GAME_START_HEADLINE': '🎮 Game Start\n',
     'JOINED_PLAYERS': 'Joined players:\n'
 }

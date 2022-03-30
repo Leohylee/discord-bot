@@ -1,6 +1,8 @@
 import logging
+from random import randrange
 from os.path import exists
 import sqlite3
+import time
 
 from . import config
 
@@ -13,7 +15,6 @@ def initializeEnvironment():
 
         createPlayersDataSet(conn)
         createLobbyDataSet(conn)
-        createPropertiesDataSet(conn)
 
 def getNewConnection():
     return sqlite3.connect(config.DB_FILE_PATH)
@@ -55,9 +56,6 @@ def _isPlayersDataSetExists(conn):
 def _isLobbyDataSetExists(conn):
     return _isTableExists(conn, config.DB_CREATE_LOBBY_SQL)
 
-def _isPropertiesDataSetExists(conn):
-    return _isTableExists(conn, config.DB_TABLE_NAME_PROPERTIES)
-
 def _executeDDL(conn, sql):
     try:
         curr = conn.cursor()
@@ -90,31 +88,22 @@ def createLobbyDataSet(conn):
     logger.info('create lobby table')
     _executeDDL(conn, config.DB_CREATE_LOBBY_SQL)
 
-def createPropertiesDataSet(conn):
-    if _isPropertiesDataSetExists(conn):
-        return
-    logger.info('create properties table')
-    _executeDDL(conn, config.DB_CREATE_PROPERTIES_SQL)
-    _initializePropertiesDataSet(conn)
-
-def _initializePropertiesDataSet(conn):
-    logger.info('initializing properties table')
-    _executeDML(conn, config.DB_INSERT_PROPERTIES_SQL)
-
 def getRankData(conn):
     sql = (f'select * from {config.DB_TABLE_NAME_PLAYER}')
     curr = _executeDDL(conn, sql)
     return curr.fetchall()
 
-def getProperty(conn, key):
-    sql = (f'select value from {config.DB_TABLE_NAME_PROPERTIES} where key = "{key}"')
-    curr = _executeDDL(conn, sql)
-    return curr.fetchone()[0]
+def getProperty(ctx, key):
+    return getattr(ctx.bot, key)
 
-def updateProperty(conn, key, value):
-    sql = (f'update {config.DB_TABLE_NAME_PROPERTIES} set value = "{value}" where key = "{key}"')
-    logger.info(f'updateProperty {key} {value}')
-    _executeDML(conn, sql)
+def getPropertyOrDefault(ctx, key, default):
+    if hasattr(ctx.bot, key):
+        return getattr(ctx.bot, key)
+    else:
+        return default
+
+def setProperty(ctx, key, value):
+    setattr(ctx.bot, key, value)
 
 def emptyLobby(conn):
     sql = (f'delete from {config.DB_TABLE_NAME_LOBBY}')
@@ -131,3 +120,18 @@ def listLobby(conn):
 
 def formatBalance(amount):
     return '${:0,.0f}'.format(amount).replace('$-','-$')
+
+def drawCard(deck):
+    pos = randrange(0, len(deck))
+    draw = deck[pos]
+    deck = deck.replace(deck[pos], '', 1)
+    return (draw, deck)
+
+def listPlayersDeck(players):
+    output = ''
+    for i in range(len(players)):
+         output += f"@{players[i]['userName']}: {', '.join(players[i]['deck'])}\n"
+    return output
+
+def showMsg(msg):  
+    print(msg + ' ' + time.strftime('%H:%M:%S'))
