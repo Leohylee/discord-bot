@@ -1,5 +1,7 @@
 develop using nodemon
 nodemon --exec "py bj_bot.py" ./bj_bot.py
 
-supported on the fly config update
+supported on-the-fly config update
+$bj update_config BJ_WINNING_POINT <winning-point>
 $bj update_config BJ_LOBBY_WAIT_TIME_SECOND <second>
+$bj update_config BJ_ROUND_PLAYER_INPUT_WAIT_TIME_SECOND <second>

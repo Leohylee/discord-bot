@@ -10,7 +10,7 @@ async def help(ctx):
     await ctx.channel.send(msg)
 
 async def hint(ctx):
-    if not util.isGameExists(ctx.conn):
+    if not util.getProperty(ctx, 'game_exists'):
         await ctx.channel.send(config.BJ_MSG['HINT_NEW_GAME'])
     else:
         await ctx.channel.send(config.BJ_MSG['HINT_JOIN_GAME'])
@@ -28,6 +28,3 @@ async def new(ctx):
 
 async def join(ctx):
     await core.joinGame(ctx)
-
-async def test(ctx):
-    pass

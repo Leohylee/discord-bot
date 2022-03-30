@@ -2,19 +2,31 @@ import logging
 from random import randrange
 from os.path import exists
 import sqlite3
-import time
 
 from . import config
 
 logger = logging.getLogger("BJBot.util")
 
-def initializeEnvironment():
+def initializeEnvironment(bot):
     if not exists(config.DB_FILE_PATH):
         logger.info('sqlite db file not found, creating sqlite db file')
         conn = sqlite3.connect(config.DB_FILE_PATH)
 
         createPlayersDataSet(conn)
         createLobbyDataSet(conn)
+    
+    bot.BJ_LOBBY_WAIT_TIME_SECOND = config.BJ_LOBBY_WAIT_TIME_SECOND
+    bot.BJ_ROUND_PLAYER_INPUT_WAIT_TIME_SECOND = config.BJ_ROUND_PLAYER_INPUT_WAIT_TIME_SECOND
+    bot.BJ_WINNING_POINT = config.BJ_WINNING_POINT
+
+    if not hasattr(bot, 'game_exists'):
+        bot.game_exists = False
+    if not hasattr(bot, 'allow_join_game'):
+        bot.allow_join_game = False
+    if not hasattr(bot, 'timer'):
+        bot.timer = None
+    if not hasattr(bot, 'turn_lock'):
+        bot.turn_lock = None
 
 def getNewConnection():
     return sqlite3.connect(config.DB_FILE_PATH)
@@ -47,9 +59,6 @@ def addNewPlayer(conn, userId, userName):
     sql = (f'insert into {config.DB_TABLE_NAME_PLAYER} (userId, userName) values ("{userId}", "{userName}")')
     _executeDML(conn, sql)
 
-def isGameExists(conn):
-    return _isTableExists(conn, config.DB_TABLE_NAME_GAME)
-
 def _isPlayersDataSetExists(conn):
     return _isTableExists(conn, config.DB_TABLE_NAME_PLAYER)
 
@@ -71,10 +80,6 @@ def _executeDML(conn, sql):
         conn.commit()
     except BaseException as e:
         print(e)
-
-def createGame(conn):
-    logger.info('create game table')
-    _executeDDL(conn, config.DB_CREATE_TABLE_SQL)
 
 def createPlayersDataSet(conn):
     if _isPlayersDataSetExists(conn):
@@ -127,11 +132,23 @@ def drawCard(deck):
     deck = deck.replace(deck[pos], '', 1)
     return (draw, deck)
 
-def listPlayersDeck(players):
-    output = ''
+def showRoundInfo(ctx, round, host, players):
+    output = f'**Round {round}**\n'
+    output += f"* * * * * *** Host ***: {', '.join(host['deck'])} * * * * *\n"
     for i in range(len(players)):
-         output += f"@{players[i]['userName']}: {', '.join(players[i]['deck'])}\n"
+         output += f"@{players[i]['userName']}: {', '.join(players[i]['deck'])} {calcPoints(ctx, players[i]['deck'])}\n"
     return output
 
-def showMsg(msg):  
-    print(msg + ' ' + time.strftime('%H:%M:%S'))
+def calcPoints(ctx, deck):
+    count_A = deck.count('A')
+    count_10 = (deck.count('J') + deck.count('Q') + deck.count('K'))*10
+    sum_rest = sum([int(card) for card in deck.replace('A','').replace('J','').replace('Q','').replace('K','')]) + count_10
+
+    combination_A = []
+    for i in range(0, count_A + 1):
+        combination_A.append(i * 11 + (count_A - i) * 1)
+    calculated = [combination+sum_rest for combination in combination_A]
+    if getProperty(ctx, 'BJ_WINNING_POINT') in calculated:
+        return [getProperty(ctx, 'BJ_WINNING_POINT')]
+    else:
+        return calculated
