@@ -60,7 +60,7 @@ def choose_reply_message(message):
     elif message.content.lower() in user_messages.swear:
         return random.choice(bot_replies.anti_swear), "anti_swear"
     elif message.content.lower() in user_messages.dot:
-        return random.choices(bot_replies.dot), ". emoji"
+        return random.choice(bot_replies.dot), ". emoji"
     else:
         return "", "unknown"
 
